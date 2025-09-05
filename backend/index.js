@@ -6,6 +6,14 @@ const ADMIN_USER = JSON.parse(process.env.ADMIN_USER || '{}');
 const AUTH_PROJECTS = JSON.parse(process.env.AUTH_PROJECTS || '[]');
 const ADMIN = JSON.parse(process.env.ADMIN || '[]');
 const CHAT_WEBHOOK_URL = process.env.CHAT_WEBHOOK_URL || '';
+
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception:', err);
+});
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled rejection at:', promise, 'reason:', reason);
+});
+
 // be mindful of:
 // numbers being passed as strings
 
