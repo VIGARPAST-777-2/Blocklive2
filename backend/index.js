@@ -1,5 +1,10 @@
 import 'dotenv/config';
 
+const PORT = process.env.PORT || 3000;
+const ADMIN_USER = JSON.parse(process.env.ADMIN_USER || '{}');
+const AUTH_PROJECTS = JSON.parse(process.env.AUTH_PROJECTS || '[]');
+const ADMIN = JSON.parse(process.env.ADMIN || '[]');
+const CHAT_WEBHOOK_URL = process.env.CHAT_WEBHOOK_URL || '';
 // be mindful of:
 // numbers being passed as strings
 
