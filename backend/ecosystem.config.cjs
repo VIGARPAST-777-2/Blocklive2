@@ -1,7 +1,8 @@
-const result = require('dotenv').config();
-if (result.error) {
-    console.error('No .env file found, Create one using .env.example');
-    process.exit(1);
+if (process.env.NODE_ENV !== 'production') {
+    const result = require('dotenv').config();
+    if (result.error) {
+        console.warn('No .env file found, skipping .env load (development only).');
+    }
 }
 
 module.exports = {
