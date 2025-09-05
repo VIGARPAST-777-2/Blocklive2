@@ -1,86 +1,69 @@
 import express from "express";
-import fs from "fs";
+import bodyParser from "body-parser";
+import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 
-const app = express();
+dotenv.config();
 
-// Configuración básica
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Para servir archivos estáticos (index.html, css, js…)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-app.use(express.static(path.join(__dirname, "public")));
 
-// ✅ Ruta principal → sirve index.html
-app.get("/", (req, res) => {
-  try {
-    res.sendFile(path.join(__dirname, "public", "index.html"));
-  } catch (error) {
-    console.error("Error sirviendo index.html:", error);
-    res.status(500).json({ success: false, message: "Error interno del servidor" });
-  }
-});
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-// ✅ API de prueba
-app.get("/api/share", (req, res) => {
-  try {
-    res.json({
-      success: true,
-      message: "Proyecto compartido correctamente",
-      projectId: "test-project",
-      user: "demo-user",
+// Middleware
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Simulación de verificación de usuario (igual que en producción)
+function verifyUser(req, res, next) {
+  const userToken = req.headers["authorization"];
+  if (!userToken || userToken !== "demo-token") {
+    return res.status(401).json({
+      success: false,
+      message: "Usuario no verificado",
     });
-  } catch (error) {
-    console.error("Error en /api/share:", error);
-    res.status(500).json({ success: false, message: "Error en el servidor" });
   }
+  req.user = "demo-user"; // asignamos usuario verificado
+  next();
+}
+
+// Servir archivos estáticos
+app.use(express.static(path.join(__dirname, "frontend")));
+
+// Endpoints API
+
+// Compatibilidad /api para que no devuelva "Ruta no encontrada"
+app.get("/api", verifyUser, (req, res) => {
+  res.json({
+    success: true,
+    message: "Proyecto compartido correctamente",
+    projectId: "test-project",
+    user: req.user,
+  });
 });
 
-// ✅ Ruta esperada por la extensión (cargar proyecto)
-app.get("/blId/:projectId/:userId", (req, res) => {
-  try {
-    const { projectId, userId } = req.params;
-
-    if (!projectId || !userId) {
-      return res.status(400).json({
-        success: false,
-        message: "Parámetros inválidos",
-      });
-    }
-
-    // Aquí se puede conectar a base de datos más adelante
-    res.json({
-      success: true,
-      message: "Proyecto cargado correctamente",
-      projectId,
-      userId,
+// Endpoint principal de compartir proyecto
+app.post("/api/share", verifyUser, (req, res) => {
+  const { projectId } = req.body;
+  if (!projectId) {
+    return res.status(400).json({
+      success: false,
+      message: "Falta projectId",
     });
-  } catch (error) {
-    console.error("Error en /blId:", error);
-    res.status(500).json({ success: false, message: "Error en el servidor" });
   }
+
+  // Aquí iría la lógica real de guardar o compartir el proyecto
+  res.json({
+    success: true,
+    message: "Proyecto compartido correctamente",
+    projectId,
+    user: req.user,
+  });
 });
 
-// ✅ Simulación de verificación de usuario
-app.get("/verify/:userId", (req, res) => {
-  try {
-    const { userId } = req.params;
-    res.json({
-      success: true,
-      verified: true,
-      userId,
-      message: "Usuario verificado correctamente",
-    });
-  } catch (error) {
-    console.error("Error en /verify:", error);
-    res.status(500).json({ success: false, message: "Error en el servidor" });
-  }
-});
-
-// ✅ Manejo de 404 → responde siempre con JSON
+// Catch-all para rutas desconocidas
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -88,8 +71,7 @@ app.use((req, res) => {
   });
 });
 
-// ✅ Arranque del servidor
-const PORT = process.env.PORT || 3000;
+// Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
+  console.log(`Servidor iniciado en http://localhost:${PORT}`);
 });
