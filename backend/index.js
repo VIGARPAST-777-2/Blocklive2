@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import fs from 'fs';
 
 const PORT = process.env.PORT || 3000;
 const ADMIN_USER = JSON.parse(process.env.ADMIN_USER || '{}');
