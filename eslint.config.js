@@ -1,9 +1,10 @@
-export default [
+/** @type {import('eslint').Linter.Config[]} */
+module.exports = [
     {
         files: ['**/*.js'],
         languageOptions: {
             ecmaVersion: 2024,
-            sourceType: 'module',
+            sourceType: 'module', // sigue siendo módulo para tu código
             globals: {
                 browser: true,
                 node: true,
